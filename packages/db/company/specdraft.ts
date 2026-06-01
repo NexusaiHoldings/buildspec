@@ -1,15 +1,21 @@
 /**
  * SpecDraft AI — company-specific database schema.
  *
- * Exports *_DDL constants consumed by packages/db/migrate.ts at build time.
+ * Exports SPECDRAFT_SCHEMA_DDL consumed by packages/db/migrate.ts at build time.
  * All tables use CREATE TABLE IF NOT EXISTS (idempotent — safe to re-run).
  *
  * Domain entities: projects, spec sections, RFI items, RAG chunks, export records.
  * All PKs are UUID. No CHECK constraints on free-form text columns.
+ *
+ * IMPORTANT: All 5 tables are combined into a single DDL constant so the
+ * migrate runner executes them in the correct FK dependency order:
+ * specdraft_projects must exist before the tables that reference it.
+ * The migrate script iterates exported *_DDL constants in alphabetical order,
+ * so separate exports would run EXPORT_RECORDS before PROJECTS (E < P).
  */
 
-/** Projects — the top-level workspace unit. Billing activation gate lives here. */
-export const SPECDRAFT_PROJECTS_DDL = `
+export const SPECDRAFT_SCHEMA_DDL = `
+-- 1. Projects — the top-level workspace unit. Billing activation gate lives here.
 CREATE TABLE IF NOT EXISTS specdraft_projects (
   id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                  UUID NOT NULL,
@@ -28,10 +34,8 @@ CREATE INDEX IF NOT EXISTS specdraft_projects_user_id_idx
 
 CREATE INDEX IF NOT EXISTS specdraft_projects_status_idx
   ON specdraft_projects (status);
-`;
 
-/** Spec sections — CSI division / section versioning within a project. */
-export const SPECDRAFT_SPEC_SECTIONS_DDL = `
+-- 2. Spec sections — CSI division / section versioning within a project.
 CREATE TABLE IF NOT EXISTS specdraft_spec_sections (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id  UUID NOT NULL REFERENCES specdraft_projects(id) ON DELETE CASCADE,
@@ -46,10 +50,8 @@ CREATE TABLE IF NOT EXISTS specdraft_spec_sections (
 
 CREATE INDEX IF NOT EXISTS specdraft_spec_sections_project_id_idx
   ON specdraft_spec_sections (project_id);
-`;
 
-/** RFI items — request-for-information corpus tied to a project. */
-export const SPECDRAFT_RFI_ITEMS_DDL = `
+-- 3. RFI items — request-for-information corpus tied to a project.
 CREATE TABLE IF NOT EXISTS specdraft_rfi_items (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id  UUID NOT NULL REFERENCES specdraft_projects(id) ON DELETE CASCADE,
@@ -63,10 +65,8 @@ CREATE TABLE IF NOT EXISTS specdraft_rfi_items (
 
 CREATE INDEX IF NOT EXISTS specdraft_rfi_items_project_id_idx
   ON specdraft_rfi_items (project_id);
-`;
 
-/** RAG chunks — indexed document segments for retrieval-augmented generation. */
-export const SPECDRAFT_RAG_CHUNKS_DDL = `
+-- 4. RAG chunks — indexed document segments for retrieval-augmented generation.
 CREATE TABLE IF NOT EXISTS specdraft_rag_chunks (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id   UUID NOT NULL REFERENCES specdraft_projects(id) ON DELETE CASCADE,
@@ -79,10 +79,8 @@ CREATE TABLE IF NOT EXISTS specdraft_rag_chunks (
 
 CREATE INDEX IF NOT EXISTS specdraft_rag_chunks_project_id_idx
   ON specdraft_rag_chunks (project_id);
-`;
 
-/** Export records — PDF/DOCX generation history with mandatory human sign-off. */
-export const SPECDRAFT_EXPORT_RECORDS_DDL = `
+-- 5. Export records — PDF/DOCX generation history with mandatory human sign-off.
 CREATE TABLE IF NOT EXISTS specdraft_export_records (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id    UUID NOT NULL REFERENCES specdraft_projects(id) ON DELETE CASCADE,
