@@ -24,6 +24,7 @@
  */
 
 import type { HandlerContext, HandlerResult } from "@nexus/identity-and-access";
+import { handleQueueDocumentForRagIndexing } from "./queue_document_for_rag_indexing";
 
 type Args = Record<string, unknown>;
 
@@ -31,5 +32,6 @@ export const DOMAIN_DISPATCH: Record<
   string,
   (ctx: HandlerContext, args: Args) => Promise<HandlerResult>
 > = {
-  // Build agent appends entries here per CTO-declared new_domain_tool.
+  queue_document_for_rag_indexing: (ctx, a) =>
+    handleQueueDocumentForRagIndexing(ctx, a),
 };
