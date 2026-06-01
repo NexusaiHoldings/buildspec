@@ -50,7 +50,7 @@ async function getSession(): Promise<SessionData | null> {
   });
 
   if (result.status !== 200) return null;
-  return result.body as SessionData;
+  return result.body as unknown as SessionData;
 }
 
 // ── Data fetcher ──────────────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ export default async function DocumentsPage({
   params,
 }: {
   params: { id: string };
-}): Promise<React.ReactElement> {
+}): Promise<JSX.Element> {
   const session = await getSession();
   if (!session) redirect("/login");
 
