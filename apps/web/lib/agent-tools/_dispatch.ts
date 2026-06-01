@@ -25,6 +25,7 @@
 
 import type { HandlerContext, HandlerResult } from "@nexus/identity-and-access";
 import { handleDraftCsiSpecSection } from "./draft_csi_spec_section";
+import { handleGenerateRfiResponseDraft } from "./generate_rfi_response_draft";
 import { handleQueueDocumentForRagIndexing } from "./queue_document_for_rag_indexing";
 
 type Args = Record<string, unknown>;
@@ -34,6 +35,8 @@ export const DOMAIN_DISPATCH: Record<
   (ctx: HandlerContext, args: Args) => Promise<HandlerResult>
 > = {
   draft_csi_spec_section: (ctx, a) => handleDraftCsiSpecSection(ctx, a),
+  generate_rfi_response_draft: (ctx, a) =>
+    handleGenerateRfiResponseDraft(ctx, a),
   queue_document_for_rag_indexing: (ctx, a) =>
     handleQueueDocumentForRagIndexing(ctx, a),
 };
