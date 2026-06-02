@@ -44,6 +44,10 @@ export async function requireAdmin(): Promise<
 export function translate(result: HandlerResultLike): NextResponse {
   const init: ResponseInit = { status: result.status };
   if (result.headers) init.headers = result.headers;
+  // 204/304 must have a null body — constructing one with "" throws.
+  if (result.status === 204 || result.status === 304) {
+    return new NextResponse(null, init);
+  }
   if (typeof result.body === "string") {
     return new NextResponse(result.body, init);
   }

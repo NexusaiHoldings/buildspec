@@ -32,10 +32,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   const responseInit: ResponseInit = { status: result.status };
   if (result.headers) responseInit.headers = result.headers;
 
+  // 204 No Content must have a null body — `new NextResponse("", {status:204})`
+  // throws (which surfaced as a bare 500 with no Set-Cookie).
   const response =
-    typeof result.body === "string"
-      ? new NextResponse(result.body, responseInit)
-      : NextResponse.json(result.body, responseInit);
+    result.status === 204 || result.status === 304
+      ? new NextResponse(null, responseInit)
+      : typeof result.body === "string"
+        ? new NextResponse(result.body, responseInit)
+        : NextResponse.json(result.body, responseInit);
 
   // Always clear the session cookie (idempotent logout, even if no token).
   response.cookies.set({
