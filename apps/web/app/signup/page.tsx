@@ -9,6 +9,7 @@
 "use client";
 
 import { useState, type FormEvent, type JSX } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 export const dynamic = "force-dynamic";
 
@@ -74,29 +75,23 @@ export default function SignupPage(): JSX.Element {
         <label htmlFor="password" style={labelStyle}>
           Password
         </label>
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="new-password"
-          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={submitting}
-          style={inputStyle}
         />
 
         <label htmlFor="confirm" style={labelStyle}>
           Confirm password
         </label>
-        <input
+        <PasswordInput
           id="confirm"
-          type="password"
           autoComplete="new-password"
-          required
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           disabled={submitting}
-          style={inputStyle}
         />
 
         {error && (

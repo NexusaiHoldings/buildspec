@@ -11,6 +11,7 @@
 "use client";
 
 import { useState, type FormEvent, type JSX } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 export const dynamic = "force-dynamic";
 
@@ -78,18 +79,31 @@ export default function LoginPage(): JSX.Element {
           style={inputStyle}
         />
 
-        <label htmlFor="password" style={labelStyle}>
-          Password
-        </label>
-        <input
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            marginTop: "0.9rem",
+            marginBottom: "0.35rem",
+          }}
+        >
+          <label htmlFor="password" style={{ ...labelStyle, marginTop: 0, marginBottom: 0 }}>
+            Password
+          </label>
+          <a
+            href="/forgot-password"
+            style={{ fontSize: "0.78rem", color: "var(--substrate-accent, #2563eb)", fontWeight: 600 }}
+          >
+            Forgot your password?
+          </a>
+        </div>
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="current-password"
-          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={submitting}
-          style={inputStyle}
         />
 
         {error && (
