@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@nexus-substrate/runtime-client": "*",
+    "@nexus/admin-console": "*",
     "@nexus/crm-and-lifecycle": "*",
     "@nexus/developer-surface": "*",
     "@nexus/files-and-media": "*",

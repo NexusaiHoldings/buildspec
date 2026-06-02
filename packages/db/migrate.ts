@@ -89,6 +89,106 @@ function collectLegoSchemas(): LegoSchemaEntry[] {
   return entries;
 }
 
+interface SeedClient {
+  query: (sql: string, params?: unknown[]) => Promise<unknown>;
+}
+
+/**
+ * Seed the admin-console nav sections so AdminShell's nav lists the bundled
+ * admin pages (the lego ships the tables but seeds no sections). Idempotent
+ * via UNIQUE (lego_name, section_name). Best-effort — never throws.
+ *
+ * Sprint substrate-admin-surface-001 (2026-06-01).
+ */
+async function seedAdminSections(client: SeedClient): Promise<void> {
+  const sections: Array<{ name: string; order: number; routes: string[] }> = [
+    { name: "Feature Flags", order: 10, routes: ["/admin/feature-flags"] },
+    { name: "System Config", order: 20, routes: ["/admin/system-config"] },
+    { name: "Audit Log", order: 30, routes: ["/admin/audit-log"] },
+  ];
+  for (const s of sections) {
+    try {
+      await client.query(
+        `INSERT INTO admin_sections (lego_name, section_name, section_order, permissions, routes)
+         VALUES ('admin-console', $1, $2, $3, $4)
+         ON CONFLICT (lego_name, section_name)
+         DO UPDATE SET section_order = EXCLUDED.section_order, routes = EXCLUDED.routes`,
+        [s.name, s.order, ["admin"], s.routes],
+      );
+      console.log(`[db/migrate]   seeded admin section "${s.name}"`);
+    } catch (err) {
+      console.warn(`[db/migrate]   WARN seed admin section "${s.name}" (non-fatal): ${err}`);
+    }
+  }
+}
+
+/**
+ * Seed two fixed test accounts into EVERY build for testing:
+ *   - testuser@nexusaiholdings.com  (regular user)
+ *   - admintest@nexusaiholdings.com (admin — must be in ADMIN_EMAILS to reach /admin)
+ *
+ * Passwords default to TestUser!2026 / AdminTest!2026 (override via
+ * TEST_USER_PASSWORD / ADMIN_TEST_PASSWORD). Hashing reuses the identity
+ * lego's scrypt hashPassword so the seeded hash verifies on login. Idempotent
+ * (ON CONFLICT (email) DO NOTHING). Best-effort — never throws.
+ *
+ * Gated by SEED_TEST_USERS (default "true"). SECURITY: set SEED_TEST_USERS=false
+ * before any real customer launch — these are incubation-phase test accounts.
+ *
+ * Sprint substrate-admin-surface-001 (2026-06-01).
+ */
+async function seedTestUsers(client: SeedClient): Promise<void> {
+  if ((process.env.SEED_TEST_USERS || "true").toLowerCase() === "false") {
+    console.log("[db/migrate] SEED_TEST_USERS=false — skipping test-user seed");
+    return;
+  }
+
+  const cryptoPath = resolve(
+    __dirname,
+    "..",
+    "..",
+    "legos",
+    "identity-and-access",
+    "api",
+    "_lib",
+    "crypto.ts",
+  );
+  let hashPassword: (plain: string) => string;
+  try {
+    const mod = (await import(pathToFileURL(cryptoPath).href)) as {
+      hashPassword: (plain: string) => string;
+    };
+    hashPassword = mod.hashPassword;
+  } catch (err) {
+    console.warn(`[db/migrate] WARN cannot import hashPassword — skipping test-user seed: ${err}`);
+    return;
+  }
+
+  const accounts: Array<{ email: string; password: string }> = [
+    {
+      email: "testuser@nexusaiholdings.com",
+      password: process.env.TEST_USER_PASSWORD || "TestUser!2026",
+    },
+    {
+      email: "admintest@nexusaiholdings.com",
+      password: process.env.ADMIN_TEST_PASSWORD || "AdminTest!2026",
+    },
+  ];
+  for (const a of accounts) {
+    try {
+      await client.query(
+        `INSERT INTO users (email, password_hash, status)
+         VALUES ($1, $2, 'active')
+         ON CONFLICT (email) DO NOTHING`,
+        [a.email, hashPassword(a.password)],
+      );
+      console.log(`[db/migrate]   seeded test user ${a.email}`);
+    } catch (err) {
+      console.warn(`[db/migrate]   WARN seed test user ${a.email} (non-fatal): ${err}`);
+    }
+  }
+}
+
 async function main(): Promise<void> {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) {
@@ -152,7 +252,7 @@ async function main(): Promise<void> {
   const { Client } = require("pg") as {
     Client: new (config: { connectionString: string }) => {
       connect: () => Promise<void>;
-      query: (sql: string) => Promise<unknown>;
+      query: (sql: string, params?: unknown[]) => Promise<unknown>;
       end: () => Promise<void>;
     };
   };
@@ -197,6 +297,10 @@ async function main(): Promise<void> {
         throw err;
       }
     }
+
+    // Best-effort seeds (admin nav sections + test users). Never fatal.
+    await seedAdminSections(client);
+    await seedTestUsers(client);
   } finally {
     await client.end();
   }

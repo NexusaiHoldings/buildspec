@@ -16,9 +16,13 @@ import Link from "next/link";
 import type { JSX } from "react";
 
 import { NAV_CONFIG, type NavLink, type NavGroup } from "@/lib/nav-config";
+import { getAdminUser } from "@/lib/admin-auth";
 
-export function TopNav(): JSX.Element {
+export async function TopNav(): Promise<JSX.Element> {
   const companyName = process.env.COMPANY_NAME || "Portfolio Company";
+  // Admin link renders only for allow-listed admins. getAdminUser() returns
+  // null with NO DB hit when there is no session cookie (anonymous traffic).
+  const admin = await getAdminUser();
 
   return (
     <nav
@@ -62,6 +66,7 @@ export function TopNav(): JSX.Element {
         {NAV_CONFIG.groups.map((group) => (
           <NavGroupItem key={group.label} group={group} />
         ))}
+        {admin && <NavItem href="/admin" label="Admin" />}
       </div>
     </nav>
   );
