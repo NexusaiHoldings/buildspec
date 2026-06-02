@@ -92,7 +92,7 @@ export default async function ExportPage({ params }: PageProps): Promise<JSX.Ele
   // Session gate
   const session = await resolveSession();
   if (!session) {
-    redirect("/api/auth/login");
+    redirect("/login");
   }
 
   // Load project

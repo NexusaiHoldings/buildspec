@@ -55,7 +55,7 @@ function StatusBadge({ status }: { status: string }): JSX.Element {
 export default async function ProjectsPage(): Promise<JSX.Element> {
   const session = await getSession();
   if (!session) {
-    redirect("/api/auth/login");
+    redirect("/login");
   }
 
   let projects: ProjectRow[] = [];

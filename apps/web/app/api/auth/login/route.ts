@@ -42,8 +42,30 @@ export async function POST(request: Request): Promise<NextResponse> {
   const responseInit: ResponseInit = { status: result.status };
   if (result.headers) responseInit.headers = result.headers;
 
-  if (typeof result.body === "string") {
-    return new NextResponse(result.body, responseInit);
+  const response =
+    typeof result.body === "string"
+      ? new NextResponse(result.body, responseInit)
+      : NextResponse.json(result.body, responseInit);
+
+  // The lego returns { session_token } in the JSON body but does not set a
+  // cookie. Auth-gated pages read the `session_token` cookie via next/headers
+  // cookies(), so we set it here (HttpOnly) on a successful login.
+  if (
+    result.status === 200 &&
+    typeof result.body === "object" &&
+    result.body !== null &&
+    typeof (result.body as { session_token?: unknown }).session_token === "string"
+  ) {
+    response.cookies.set({
+      name: "session_token",
+      value: (result.body as { session_token: string }).session_token,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
   }
-  return NextResponse.json(result.body, responseInit);
+
+  return response;
 }

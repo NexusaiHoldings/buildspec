@@ -113,7 +113,7 @@ export default async function ActivatePage({
 }: PageProps): Promise<JSX.Element> {
   const session = await getSession();
   if (!session) {
-    redirect("/api/auth/login");
+    redirect("/login");
   }
 
   const project = await getProject(params.id, session.user_id).catch(() => null);
@@ -178,14 +178,14 @@ export default async function ActivatePage({
 
     const cookieStore = cookies();
     const token = cookieStore.get("session_token")?.value;
-    if (!token) redirect("/api/auth/login");
+    if (!token) redirect("/login");
 
     const authResult = await handleSession({
       authorizationHeader: `Bearer ${token}`,
       ctx: { db: buildDb(), events: buildEventBus() },
     });
     if (authResult.status !== 200 || typeof authResult.body !== "object") {
-      redirect("/api/auth/login");
+      redirect("/login");
     }
     const sess = authResult.body as { user_id: string };
 

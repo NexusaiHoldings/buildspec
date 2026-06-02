@@ -31,8 +31,29 @@ export async function POST(request: Request): Promise<NextResponse> {
   const responseInit: ResponseInit = { status: result.status };
   if (result.headers) responseInit.headers = result.headers;
 
-  if (typeof result.body === "string") {
-    return new NextResponse(result.body, responseInit);
+  const response =
+    typeof result.body === "string"
+      ? new NextResponse(result.body, responseInit)
+      : NextResponse.json(result.body, responseInit);
+
+  // Signup returns { session_token } (201) and auto-logs-in the new user.
+  // Set the HttpOnly cookie the auth-gated pages read, same as /login.
+  if (
+    result.status === 201 &&
+    typeof result.body === "object" &&
+    result.body !== null &&
+    typeof (result.body as { session_token?: unknown }).session_token === "string"
+  ) {
+    response.cookies.set({
+      name: "session_token",
+      value: (result.body as { session_token: string }).session_token,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
   }
-  return NextResponse.json(result.body, responseInit);
+
+  return response;
 }

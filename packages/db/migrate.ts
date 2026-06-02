@@ -24,7 +24,7 @@
  * 500. This script closes that gap by running the DDL at build time.
  */
 
-import { readdirSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import { join, resolve } from "path";
 import { pathToFileURL } from "url";
 
@@ -32,6 +32,61 @@ interface DdlEntry {
   file: string;
   constant: string;
   sql: string;
+}
+
+interface LegoSchemaEntry {
+  lego: string;
+  file: string;
+  sql: string;
+}
+
+/**
+ * Collect every `legos/<lego>/schema/*.sql` file bundled with the substrate.
+ *
+ * Sprint buildspec-auth-fix-001 (2026-06-01). Pre-fix this runner applied ONLY
+ * `packages/db/company/*.ts` DDL constants — the bundled legos' own schema
+ * (users / sessions / billing_* / etc.) was never created in the company DB.
+ * Live evidence (Buildspec): POST /api/auth/login → 500 because `users` did
+ * not exist; the auth-gated pages then redirected to a non-existent login page
+ * → 405. This closes the schema half of that gap.
+ *
+ * Returned sorted by (lego, file) so per-lego filename order (001 → 002 → 003)
+ * is preserved — within-lego FKs depend on it. No cross-lego FKs exist, so
+ * lego order itself is irrelevant. Every schema file is idempotent
+ * (CREATE TABLE/INDEX IF NOT EXISTS), so this is safe to run on every build.
+ */
+function collectLegoSchemas(): LegoSchemaEntry[] {
+  const legosDir = resolve(__dirname, "..", "..", "legos");
+  let legoNames: string[];
+  try {
+    legoNames = readdirSync(legosDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .sort();
+  } catch {
+    console.log(`[db/migrate] No legos/ directory at ${legosDir} — skipping lego schemas`);
+    return [];
+  }
+
+  const entries: LegoSchemaEntry[] = [];
+  for (const lego of legoNames) {
+    const schemaDir = join(legosDir, lego, "schema");
+    let sqlFiles: string[];
+    try {
+      sqlFiles = readdirSync(schemaDir)
+        .filter((f) => f.endsWith(".sql"))
+        .sort();
+    } catch {
+      continue; // lego has no schema/ dir
+    }
+    for (const file of sqlFiles) {
+      const sql = readFileSync(join(schemaDir, file), "utf8");
+      if (sql.trim().length > 0) {
+        entries.push({ lego, file, sql });
+      }
+    }
+  }
+  return entries;
 }
 
 async function main(): Promise<void> {
@@ -42,21 +97,19 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Bundled lego schemas (users / sessions / billing_* / etc.) — applied
+  // BEFORE company DDL so company tables can reference lego tables.
+  const legoSchemas = collectLegoSchemas();
+
+  // Per-company DDL constants from packages/db/company/*.ts.
   const companyDir = resolve(__dirname, "company");
-  let tsFiles: string[];
+  const ddls: DdlEntry[] = [];
+  let tsFiles: string[] = [];
   try {
     tsFiles = readdirSync(companyDir).filter((f) => f.endsWith(".ts"));
-  } catch (err) {
-    console.log(`[db/migrate] No company/ directory at ${companyDir} — nothing to migrate`);
-    return;
+  } catch {
+    console.log(`[db/migrate] No company/ directory at ${companyDir} — company DDL skipped`);
   }
-
-  if (tsFiles.length === 0) {
-    console.log("[db/migrate] No .ts files in packages/db/company/ — nothing to migrate");
-    return;
-  }
-
-  const ddls: DdlEntry[] = [];
   for (const file of tsFiles) {
     const fullPath = join(companyDir, file);
     let mod: Record<string, unknown>;
@@ -76,16 +129,21 @@ async function main(): Promise<void> {
     }
   }
 
-  if (ddls.length === 0) {
+  if (legoSchemas.length === 0 && ddls.length === 0) {
     console.log(
-      "[db/migrate] No *_DDL / *_SCHEMA_SQL constants in packages/db/company/ — nothing to migrate",
+      "[db/migrate] No lego schemas and no *_DDL / *_SCHEMA_SQL constants — nothing to migrate",
     );
     return;
   }
 
-  console.log(`[db/migrate] Found ${ddls.length} DDL constant(s):`);
+  console.log(
+    `[db/migrate] Found ${legoSchemas.length} lego schema file(s) + ${ddls.length} company DDL constant(s)`,
+  );
+  for (const s of legoSchemas) {
+    console.log(`  - lego ${s.lego}/${s.file} (${s.sql.length} chars)`);
+  }
   for (const d of ddls) {
-    console.log(`  - ${d.file}::${d.constant} (${d.sql.length} chars)`);
+    console.log(`  - company ${d.file}::${d.constant} (${d.sql.length} chars)`);
   }
 
   // Dynamic require for `pg` so tsx doesn't try to bundle Node-built-ins.
@@ -103,17 +161,29 @@ async function main(): Promise<void> {
   await client.connect();
   console.log("[db/migrate] Connected to DATABASE_URL");
 
-  let succeeded = 0;
+  let legoSucceeded = 0;
+  let ddlSucceeded = 0;
   try {
+    for (const s of legoSchemas) {
+      console.log(`[db/migrate] Executing lego ${s.lego}/${s.file} ...`);
+      try {
+        await client.query(s.sql);
+        legoSucceeded += 1;
+        console.log(`[db/migrate]   OK lego ${s.lego}/${s.file}`);
+      } catch (err) {
+        console.error(`[db/migrate]   FAILED lego ${s.lego}/${s.file}: ${err}`);
+        throw err;
+      }
+    }
     for (const d of ddls) {
-      console.log(`[db/migrate] Executing ${d.file}::${d.constant} ...`);
+      console.log(`[db/migrate] Executing company ${d.file}::${d.constant} ...`);
       try {
         await client.query(d.sql);
-        succeeded += 1;
-        console.log(`[db/migrate]   OK ${d.file}::${d.constant}`);
+        ddlSucceeded += 1;
+        console.log(`[db/migrate]   OK company ${d.file}::${d.constant}`);
       } catch (err) {
         console.error(
-          `[db/migrate]   FAILED ${d.file}::${d.constant}: ${err}`,
+          `[db/migrate]   FAILED company ${d.file}::${d.constant}: ${err}`,
         );
         throw err;
       }
@@ -123,7 +193,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `[db/migrate] Complete — ${succeeded}/${ddls.length} DDL constants applied`,
+    `[db/migrate] Complete — ${legoSucceeded}/${legoSchemas.length} lego schema(s) + ${ddlSucceeded}/${ddls.length} company DDL constant(s) applied`,
   );
 }
 
