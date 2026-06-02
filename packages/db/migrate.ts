@@ -163,7 +163,14 @@ async function main(): Promise<void> {
 
   let legoSucceeded = 0;
   let ddlSucceeded = 0;
+  const legoFailed: string[] = [];
   try {
+    // Lego schemas are best-effort: applied with continue-on-error. The 16
+    // bundled legos are heterogeneous — most create their own tables (users,
+    // sessions, billing_*), but some ALTER Nexus-platform tables that do not
+    // exist in a company DB (e.g. memory-and-knowledge ALTERs memory_items).
+    // A platform-dependent lego must NOT fail the company build, so we warn
+    // and continue. Company DDL below stays fatal.
     for (const s of legoSchemas) {
       console.log(`[db/migrate] Executing lego ${s.lego}/${s.file} ...`);
       try {
@@ -171,8 +178,10 @@ async function main(): Promise<void> {
         legoSucceeded += 1;
         console.log(`[db/migrate]   OK lego ${s.lego}/${s.file}`);
       } catch (err) {
-        console.error(`[db/migrate]   FAILED lego ${s.lego}/${s.file}: ${err}`);
-        throw err;
+        legoFailed.push(`${s.lego}/${s.file}`);
+        console.warn(
+          `[db/migrate]   WARN skipping lego ${s.lego}/${s.file} (non-fatal): ${err}`,
+        );
       }
     }
     for (const d of ddls) {
@@ -195,6 +204,11 @@ async function main(): Promise<void> {
   console.log(
     `[db/migrate] Complete — ${legoSucceeded}/${legoSchemas.length} lego schema(s) + ${ddlSucceeded}/${ddls.length} company DDL constant(s) applied`,
   );
+  if (legoFailed.length > 0) {
+    console.warn(
+      `[db/migrate] ${legoFailed.length} lego schema(s) skipped (non-fatal, likely platform-table dependencies): ${legoFailed.join(", ")}`,
+    );
+  }
 }
 
 main().catch((err) => {
