@@ -25,6 +25,8 @@ export interface AdminUser {
   email: string;
 }
 
+export type SessionUser = AdminUser;
+
 /** Allow-listed admin emails (lowercased). */
 export function adminEmails(): string[] {
   const raw = process.env.ADMIN_EMAILS || "admintest@nexusaiholdings.com";
@@ -43,12 +45,17 @@ export function adminToken(): string {
   );
 }
 
+/** True if the email is allow-listed as an admin. */
+export function isAdminEmail(email: string): boolean {
+  return adminEmails().includes(email.toLowerCase());
+}
+
 /**
- * Resolve the current session user and return it only if it is an admin.
- * Returns null when there is no session cookie (no DB hit), the session is
- * invalid/expired, or the user's email is not allow-listed.
+ * Resolve the current session user (any role), or null. Returns null with NO
+ * DB hit when there is no session cookie (anonymous traffic); otherwise
+ * validates the session via the identity lego.
  */
-export async function getAdminUser(): Promise<AdminUser | null> {
+export async function getSessionUser(): Promise<SessionUser | null> {
   const token = cookies().get("session_token")?.value;
   if (!token) return null;
 
@@ -66,8 +73,16 @@ export async function getAdminUser(): Promise<AdminUser | null> {
     return null;
   }
   const body = result.body as { user_id?: string; email?: string };
-  if (!body.email || !adminEmails().includes(body.email.toLowerCase())) {
-    return null;
-  }
+  if (!body.email) return null;
   return { id: body.user_id ?? "", email: body.email };
+}
+
+/**
+ * Resolve the current session user and return it only if it is an admin.
+ * Returns null for anonymous, invalid sessions, or non-allow-listed users.
+ */
+export async function getAdminUser(): Promise<AdminUser | null> {
+  const user = await getSessionUser();
+  if (!user || !isAdminEmail(user.email)) return null;
+  return user;
 }

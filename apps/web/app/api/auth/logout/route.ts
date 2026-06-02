@@ -8,6 +8,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { handleLogout } from "@nexus/identity-and-access";
 import { buildDb } from "@/lib/db";
 import { buildEventBus } from "@/lib/events";
@@ -16,16 +17,36 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<NextResponse> {
+  // The session lives in an HttpOnly cookie, so client logout POSTs carry no
+  // Authorization header — read the token from the cookie to revoke it.
+  const cookieToken = cookies().get("session_token")?.value;
+  const authHeader =
+    request.headers.get("authorization") ||
+    (cookieToken ? `Bearer ${cookieToken}` : null);
+
   const result = await handleLogout({
-    authorizationHeader: request.headers.get("authorization"),
+    authorizationHeader: authHeader,
     ctx: { db: buildDb(), events: buildEventBus() },
   });
 
   const responseInit: ResponseInit = { status: result.status };
   if (result.headers) responseInit.headers = result.headers;
 
-  if (typeof result.body === "string") {
-    return new NextResponse(result.body, responseInit);
-  }
-  return NextResponse.json(result.body, responseInit);
+  const response =
+    typeof result.body === "string"
+      ? new NextResponse(result.body, responseInit)
+      : NextResponse.json(result.body, responseInit);
+
+  // Always clear the session cookie (idempotent logout, even if no token).
+  response.cookies.set({
+    name: "session_token",
+    value: "",
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
 }

@@ -16,13 +16,16 @@ import Link from "next/link";
 import type { JSX } from "react";
 
 import { NAV_CONFIG, type NavLink, type NavGroup } from "@/lib/nav-config";
-import { getAdminUser } from "@/lib/admin-auth";
+import { getSessionUser, isAdminEmail } from "@/lib/admin-auth";
+import { UserMenu } from "@/components/UserMenu";
 
 export async function TopNav(): Promise<JSX.Element> {
   const companyName = process.env.COMPANY_NAME || "Portfolio Company";
-  // Admin link renders only for allow-listed admins. getAdminUser() returns
-  // null with NO DB hit when there is no session cookie (anonymous traffic).
-  const admin = await getAdminUser();
+  // Resolve the session user once (NO DB hit when there is no cookie). Logged-in
+  // users get a profile avatar; anonymous users get a Log in link. The Admin
+  // link renders only for allow-listed admins.
+  const user = await getSessionUser();
+  const isAdmin = user ? isAdminEmail(user.email) : false;
 
   return (
     <nav
@@ -66,7 +69,12 @@ export async function TopNav(): Promise<JSX.Element> {
         {NAV_CONFIG.groups.map((group) => (
           <NavGroupItem key={group.label} group={group} />
         ))}
-        {admin && <NavItem href="/admin" label="Admin" />}
+        {isAdmin && <NavItem href="/admin" label="Admin" />}
+        {user ? (
+          <UserMenu email={user.email} />
+        ) : (
+          <NavItem href="/login" label="Log in" />
+        )}
       </div>
     </nav>
   );
