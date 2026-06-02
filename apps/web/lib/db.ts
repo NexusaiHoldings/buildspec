@@ -2,13 +2,15 @@
  * Substrate Db adapter — implements @nexus/identity-and-access's Db interface
  * (and any other lego that needs DB access) using `pg` + a singleton Pool.
  *
- * Sprint substrate-auth-routes-001 (2026-05-21).
+ * Sprint substrate-auth-routes-001 (2026-05-21); pg externalization fix
+ * (2026-06-01).
  *
- * Pattern: eval("require")("pg") to bypass webpack bundling (same pattern
- * agent-generated app code uses — pg ships Node-built-in net/tls modules
- * that can't be polyfilled). DATABASE_URL is read at first-call time so
- * Vercel preview deploys without a DB can still build (they just fail
- * at runtime when the route is hit, which is the right shape for preview).
+ * Pattern: `pg` is listed in next.config.js serverComponentsExternalPackages,
+ * so it is NOT bundled by webpack (it ships Node-built-in net/tls modules that
+ * can't be polyfilled) and IS included in the serverless function's
+ * node_modules — a normal require("pg") resolves at runtime. DATABASE_URL is
+ * read at first-call time so Vercel preview deploys without a DB can still
+ * build (they just fail at runtime when the route is hit).
  */
 
 import type { Db } from "@nexus/identity-and-access/api/_lib/db";
@@ -21,8 +23,12 @@ function getPool(): {
   query: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
 } {
   if (_pool) return _pool;
+  // `pg` is externalized in next.config.js (serverComponentsExternalPackages),
+  // so a normal require resolves it from the function's node_modules at runtime
+  // AND lets Next's file tracer include it. (The old eval("require") hid pg
+  // from the tracer → "Cannot find module 'pg'" at runtime → 500.)
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { Pool: PgPool } = eval("require")("pg") as {
+  const { Pool: PgPool } = require("pg") as {
     Pool: new (config: Record<string, unknown>) => {
       query: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
     };
