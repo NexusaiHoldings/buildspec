@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { TopNav } from "@/components/topnav";
+import { Footer } from "@/components/Footer";
+import { CookieBanner } from "@nexus/legal-and-compliance/ui/CookieBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,6 +20,8 @@ export default function RootLayout({
       <body>
         <TopNav />
         <main>{children}</main>
+        <Footer />
+        <CookieBanner />
       </body>
     </html>
   );

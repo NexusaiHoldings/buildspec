@@ -32,7 +32,8 @@
     "pg": "^8.11.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "@nexus/legal-and-compliance": "*"
   },
   "name": "web"
 }

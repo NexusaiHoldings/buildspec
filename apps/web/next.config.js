@@ -2,8 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   // Lego packages ship TS/TSX source (no build step) — Next must transpile
-  // the ones whose UI components we render in the app (admin-console).
-  transpilePackages: ["@nexus/admin-console"],
+  // the ones whose UI components we render in the app (admin-console +
+  // legal-and-compliance: LegalDocViewer / CookieBanner / AccessibilityStatement).
+  transpilePackages: ["@nexus/admin-console", "@nexus/legal-and-compliance"],
   experimental: {
     typedRoutes: false,
     // `pg` ships Node-built-in deps (net/tls/pg-native) webpack can't bundle.
