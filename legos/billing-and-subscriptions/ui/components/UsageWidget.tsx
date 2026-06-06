@@ -1,3 +1,4 @@
+"use client";
 /* Usage widget — shows current period usage by meter. */
 import React, { useEffect, useState } from "react";
 

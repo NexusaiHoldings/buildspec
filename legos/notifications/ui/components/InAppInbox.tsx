@@ -1,3 +1,4 @@
+"use client";
 /* In-app notification inbox — fetches from /api/notifications/inbox + mark-read. */
 import React, { useEffect, useState } from "react";
 

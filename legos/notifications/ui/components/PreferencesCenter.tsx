@@ -1,3 +1,4 @@
+"use client";
 /* Preferences center — toggle notifications per channel + category. */
 import React, { useEffect, useState } from "react";
 

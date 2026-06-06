@@ -31,6 +31,7 @@ config_schema:
       description: Verified sender address for Resend (e.g. notifications@example.com).
     default_channels:
       type: array
+      default: [email, in_app]
       description: Channels enabled by default for new users. User can opt out per-channel via /api/notifications/preferences.
       items:
         type: string

@@ -22,31 +22,8 @@ export interface LegoConfig {
 export const LEGOS: readonly LegoConfig[] = [
   {
     "config": {
-      "properties": {
-        "default_permissions": {
-          "description": "Roles that have access to the admin console by default.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "enable_feature_flags": {
-          "default": true,
-          "description": "Enable the feature flags admin section.",
-          "type": "boolean"
-        },
-        "enable_impersonation": {
-          "default": false,
-          "description": "Show impersonation button in admin shell. Actual session-switching is deferred to a future security-review sprint.\n",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "default_permissions",
-        "enable_impersonation",
-        "enable_feature_flags"
-      ],
-      "type": "object"
+      "enable_feature_flags": true,
+      "enable_impersonation": false
     },
     "isStub": false,
     "name": "admin-console",
@@ -71,38 +48,7 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "events": {
-          "properties": {
-            "taxonomy": {
-              "default": [
-                "page_view",
-                "sign_up",
-                "activation",
-                "purchase"
-              ],
-              "description": "Canonical event names the product emits.",
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            }
-          },
-          "type": "object"
-        },
-        "funnels": {
-          "default": [],
-          "description": "Named funnels as ordered event-name lists.",
-          "items": {
-            "type": "object"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "events"
-      ],
-      "type": "object"
+      "funnels": []
     },
     "isStub": false,
     "name": "analytics-and-telemetry",
@@ -117,72 +63,9 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "default_currency": {
-          "description": "Default currency for new subscriptions.",
-          "enum": [
-            "usd",
-            "eur",
-            "gbp",
-            "cad",
-            "aud"
-          ],
-          "type": "string"
-        },
-        "enable_proration": {
-          "default": true,
-          "type": "boolean"
-        },
-        "stripe_publishable_key": {
-          "description": "Stripe publishable key (pk_live_... or pk_test_...). Secret key is read from env STRIPE_SECRET_KEY.",
-          "type": "string"
-        },
-        "tier_ladder": {
-          "description": "Pricing tiers exposed in checkout. Maps to chairman's $14/$24/$59/$99 ladder by default.",
-          "items": {
-            "properties": {
-              "amount": {
-                "description": "Cents",
-                "type": "integer"
-              },
-              "interval": {
-                "enum": [
-                  "month",
-                  "year"
-                ],
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "price_id": {
-                "description": "Stripe Price ID (price_...)",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "price_id",
-              "amount",
-              "interval"
-            ],
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "trial_days": {
-          "default": 0,
-          "maximum": 90,
-          "minimum": 0,
-          "type": "integer"
-        }
-      },
-      "required": [
-        "stripe_publishable_key",
-        "default_currency",
-        "tier_ladder"
-      ],
-      "type": "object"
+      "default_currency": "usd",
+      "enable_proration": true,
+      "trial_days": 0
     },
     "isStub": false,
     "name": "billing-and-subscriptions",
@@ -206,68 +89,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "outreach": {
-          "properties": {
-            "daily_send_cap": {
-              "default": 50,
-              "description": "Max agent-initiated outreach sends per day (0 = unlimited).",
-              "minimum": 0,
-              "type": "integer"
-            },
-            "require_approval": {
-              "default": true,
-              "description": "Whether agent-drafted outreach must be approved before sending.",
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "pipeline": {
-          "properties": {
-            "auto_advance": {
-              "default": false,
-              "description": "Whether the agent may advance a contact's stage without approval.",
-              "type": "boolean"
-            },
-            "stages": {
-              "default": [
-                "new",
-                "contacted",
-                "qualified",
-                "proposal",
-                "won",
-                "lost"
-              ],
-              "description": "Ordered pipeline stage names.",
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            }
-          },
-          "type": "object"
-        },
-        "scoring": {
-          "properties": {
-            "hot_lead_threshold": {
-              "default": 70,
-              "description": "score_lead value (0-100) above which a lead is flagged hot.",
-              "maximum": 100,
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "pipeline",
-        "outreach"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "crm-and-lifecycle",
     "slots": [
@@ -290,42 +112,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "rate_limit": {
-          "properties": {
-            "default_rpm": {
-              "default": 600,
-              "type": "integer"
-            },
-            "enforce": {
-              "default": true,
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "webhooks": {
-          "properties": {
-            "events": {
-              "default": [
-                "user.created",
-                "payment.succeeded"
-              ],
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "rate_limit"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "developer-surface",
     "slots": [
@@ -343,44 +130,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "storage": {
-          "properties": {
-            "allowed_types": {
-              "default": [
-                "image/png",
-                "image/jpeg",
-                "application/pdf",
-                "text/csv"
-              ],
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "max_file_mb": {
-              "default": 25,
-              "type": "integer"
-            }
-          },
-          "type": "object"
-        },
-        "virus_scan": {
-          "properties": {
-            "required": {
-              "default": true,
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "storage"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "files-and-media",
     "slots": [
@@ -398,59 +148,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "mfa": {
-          "description": "MFA configuration (wired in 2.2)",
-          "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
-            "enforcement": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "password_policy": {
-          "description": "Password strength requirements",
-          "properties": {
-            "min_length": {
-              "type": "integer"
-            },
-            "require_digit": {
-              "type": "boolean"
-            },
-            "require_special": {
-              "type": "boolean"
-            },
-            "require_uppercase": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "providers": {
-          "description": "Authentication providers to enable",
-          "items": {
-            "enum": [
-              "email",
-              "google_oauth",
-              "github_oauth",
-              "passkey",
-              "totp"
-            ],
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "providers",
-        "password_policy"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "identity-and-access",
     "slots": [
@@ -474,43 +172,9 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "cookie_banner_enabled": {
-          "default": true,
-          "description": "Show cookie consent banner to new visitors.",
-          "type": "boolean"
-        },
-        "jurisdiction": {
-          "default": "us",
-          "description": "Primary legal jurisdiction for this company's documents.",
-          "enum": [
-            "us",
-            "eu",
-            "uk",
-            "ca",
-            "au",
-            "global"
-          ],
-          "type": "string"
-        },
-        "liability_boundary_class": {
-          "default": "assistant",
-          "description": "Mirrors spec \u00a78. Controls strictness of disclosure flows. regulated_advisor and fiduciary companies get additional disclosure requirements wired into every external communication.\n",
-          "enum": [
-            "tool",
-            "assistant",
-            "fiduciary",
-            "regulated_advisor"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "jurisdiction",
-        "cookie_banner_enabled",
-        "liability_boundary_class"
-      ],
-      "type": "object"
+      "cookie_banner_enabled": true,
+      "jurisdiction": "us",
+      "liability_boundary_class": "assistant"
     },
     "isStub": false,
     "name": "legal-and-compliance",
@@ -545,41 +209,10 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "contradiction_threshold": {
-          "default": 3,
-          "description": "Contradicting newer observations before a long-term memory is demoted.",
-          "maximum": 10,
-          "minimum": 1,
-          "type": "integer"
-        },
-        "knowledge_compiler_debounce_seconds": {
-          "default": 300,
-          "description": "Min seconds between compiler runs per company.",
-          "maximum": 3600,
-          "minimum": 30,
-          "type": "integer"
-        },
-        "long_term_eviction_no_retrieval_days": {
-          "default": 90,
-          "description": "Long-term entries flagged low-value if not retrieved in N days.",
-          "maximum": 365,
-          "minimum": 30,
-          "type": "integer"
-        },
-        "working_memory_ttl_days": {
-          "default": 7,
-          "description": "Working-tier memories evicted after N idle days (spec \u00a75.6).",
-          "maximum": 90,
-          "minimum": 1,
-          "type": "integer"
-        }
-      },
-      "required": [
-        "working_memory_ttl_days",
-        "long_term_eviction_no_retrieval_days"
-      ],
-      "type": "object"
+      "contradiction_threshold": 3,
+      "knowledge_compiler_debounce_seconds": 300,
+      "long_term_eviction_no_retrieval_days": 90,
+      "working_memory_ttl_days": 7
     },
     "isStub": false,
     "name": "memory-and-knowledge",
@@ -599,44 +232,11 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "default_channels": {
-          "description": "Channels enabled by default for new users. User can opt out per-channel via /api/notifications/preferences.",
-          "items": {
-            "enum": [
-              "email",
-              "in_app",
-              "web_push",
-              "sms"
-            ],
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "rate_limit_per_user_per_hour": {
-          "default": 30,
-          "maximum": 1000,
-          "minimum": 1,
-          "type": "integer"
-        },
-        "resend_from_email": {
-          "description": "Verified sender address for Resend (e.g. notifications@example.com).",
-          "type": "string"
-        },
-        "twilio_messaging_service_sid": {
-          "description": "Optional Twilio Messaging Service SID. Required only if 'sms' is in default_channels.",
-          "type": "string"
-        },
-        "web_push_vapid_public_key": {
-          "description": "Optional VAPID public key for web push. Required only if 'web_push' in default_channels.",
-          "type": "string"
-        }
-      },
-      "required": [
-        "resend_from_email",
-        "default_channels"
+      "default_channels": [
+        "email",
+        "in_app"
       ],
-      "type": "object"
+      "rate_limit_per_user_per_hour": 30
     },
     "isStub": false,
     "name": "notifications",
@@ -661,34 +261,12 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "sample_data": {
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "steps": {
-          "default": [
-            "verify_email",
-            "complete_profile",
-            "first_action",
-            "invite_team"
-          ],
-          "description": "Ordered onboarding step keys.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "steps"
-      ],
-      "type": "object"
+      "steps": [
+        "verify_email",
+        "complete_profile",
+        "first_action",
+        "invite_team"
+      ]
     },
     "isStub": false,
     "name": "onboarding",
@@ -708,52 +286,12 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "invitations": {
-          "properties": {
-            "expiry_days": {
-              "default": 14,
-              "minimum": 1,
-              "type": "integer"
-            }
-          },
-          "type": "object"
-        },
-        "roles": {
-          "default": [
-            "owner",
-            "admin",
-            "member",
-            "viewer"
-          ],
-          "description": "RBAC roles, most-privileged first.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "seats": {
-          "properties": {
-            "default_limit": {
-              "default": 5,
-              "description": "Default seat limit for a new org (0 = unlimited).",
-              "minimum": 0,
-              "type": "integer"
-            },
-            "enforce": {
-              "default": true,
-              "description": "Whether to block invitations beyond the seat limit.",
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "roles",
-        "seats"
-      ],
-      "type": "object"
+      "roles": [
+        "owner",
+        "admin",
+        "member",
+        "viewer"
+      ]
     },
     "isStub": false,
     "name": "organizations-and-teams",
@@ -777,65 +315,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "export": {
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "format": {
-              "default": "json",
-              "enum": [
-                "json",
-                "csv"
-              ],
-              "type": "string"
-            },
-            "retention_days": {
-              "default": 7,
-              "description": "How long a generated export download link stays valid.",
-              "minimum": 1,
-              "type": "integer"
-            }
-          },
-          "type": "object"
-        },
-        "profile": {
-          "properties": {
-            "required_fields": {
-              "default": [
-                "display_name",
-                "avatar_url",
-                "timezone"
-              ],
-              "description": "Profile fields that count toward the completion score.",
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            }
-          },
-          "type": "object"
-        },
-        "stale_account": {
-          "properties": {
-            "inactive_days_threshold": {
-              "default": 90,
-              "description": "Days of inactivity before detect_stale_account flags an account.",
-              "minimum": 1,
-              "type": "integer"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "export"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "profile-and-account",
     "slots": [
@@ -859,41 +339,10 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
-      "properties": {
-        "facets": {
-          "default": [
-            "entity_type",
-            "category"
-          ],
-          "description": "Facet fields exposed in the results panel.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "index": {
-          "properties": {
-            "entity_types": {
-              "default": [
-                "page",
-                "document",
-                "contact",
-                "ticket"
-              ],
-              "description": "Entity types indexed for search.",
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "index"
-      ],
-      "type": "object"
+      "facets": [
+        "entity_type",
+        "category"
+      ]
     },
     "isStub": false,
     "name": "search",
@@ -912,40 +361,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "moderation": {
-          "properties": {
-            "auto_hide_spam": {
-              "default": false,
-              "type": "boolean"
-            },
-            "require_approval": {
-              "default": true,
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "referrals": {
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "reward_type": {
-              "default": "credit",
-              "type": "string"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "moderation"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "social-and-engagement",
     "slots": [
@@ -963,69 +379,7 @@ export const LEGOS: readonly LegoConfig[] = [
     "version": "1.0.0"
   },
   {
-    "config": {
-      "properties": {
-        "deflection": {
-          "description": "AI-deflection behavior \u2014 the agent attempts a KB-grounded answer before opening a ticket.",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "min_kb_confidence": {
-              "default": 0.7,
-              "description": "Minimum suggest_kb_article relevance (0-1) before auto-deflecting instead of opening a ticket.",
-              "maximum": 1.0,
-              "minimum": 0.0,
-              "type": "number"
-            }
-          },
-          "type": "object"
-        },
-        "escalation": {
-          "description": "When the agent must hand a ticket to a human.",
-          "properties": {
-            "auto_escalate_priorities": {
-              "default": [
-                "high",
-                "urgent"
-              ],
-              "description": "Ticket priorities the agent never auto-resolves (always escalates to a human queue).",
-              "items": {
-                "enum": [
-                  "low",
-                  "normal",
-                  "high",
-                  "urgent"
-                ],
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "escalation_channel": {
-              "description": "Where escalations land (e.g. a Slack channel or email alias). Substrate-resolved.",
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "kb": {
-          "properties": {
-            "public": {
-              "default": true,
-              "description": "Whether the KB index is publicly browsable (vs auth-gated).",
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "deflection",
-        "escalation"
-      ],
-      "type": "object"
-    },
+    "config": {},
     "isStub": false,
     "name": "support-and-help",
     "slots": [

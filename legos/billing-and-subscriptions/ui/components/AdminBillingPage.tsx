@@ -1,3 +1,4 @@
+"use client";
 /* Admin billing page — uses AdminPageTemplate + AdminTable from admin-console.
 
 Shows all subscriptions (filterable by status + tier) + a tab for at-risk

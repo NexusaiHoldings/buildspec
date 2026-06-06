@@ -1,3 +1,4 @@
+"use client";
 /* Checkout form — POSTs to /api/billing/checkout, redirects to Stripe.
 
 Uses lego config's tier_ladder. Calls slot `checkout_extra_fields` for

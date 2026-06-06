@@ -1,3 +1,4 @@
+"use client";
 /* Subscription summary card — shown on user's account page.
 
 Shows current tier, status, next billing date, and lets user open

@@ -33,6 +33,7 @@ config_schema:
     default_currency:
       type: string
       enum: [usd, eur, gbp, cad, aud]
+      default: usd
       description: Default currency for new subscriptions.
     tier_ladder:
       type: array
