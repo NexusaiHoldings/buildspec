@@ -20,7 +20,7 @@ export async function handleSearch(
   }
   params.push(limit);
   const rows = await ctx.db.query<DbRow>(
-    `SELECT id, entity_type, entity_id, title, body, category
+    `SELECT id, entity_type, entity_id, title, body, category, url
      FROM search_index
      WHERE (title ILIKE $1 OR body ILIKE $1 OR $2 = ANY(keywords))${typeClause}
      ORDER BY updated_at DESC LIMIT $${params.length}`,

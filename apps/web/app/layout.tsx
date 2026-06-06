@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { CookieBanner } from "@nexus/legal-and-compliance/ui/CookieBanner";
 import { SupportWidget } from "@nexus/support-and-help/ui/SupportWidget";
 import { AnalyticsBeacon } from "@/components/AnalyticsBeacon";
+import { CommandPalette } from "@/components/CommandPalette";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default function RootLayout({
             session, so the widget works anonymously too. */}
         <SupportWidget />
         <AnalyticsBeacon />
+        <CommandPalette />
       </body>
     </html>
   );
