@@ -17,6 +17,7 @@ const ACCOUNT_LINKS: ReadonlyArray<{ href: string; label: string }> = [
   { href: "/org", label: "Organization" },
   { href: "/billing", label: "Billing" },
   { href: "/notifications", label: "Notifications" },
+  { href: "/files", label: "Files" },
   { href: "/onboarding", label: "Getting started" },
   { href: "/developers", label: "Developers" },
   { href: "/help", label: "Help" },

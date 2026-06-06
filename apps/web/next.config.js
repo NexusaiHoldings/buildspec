@@ -4,7 +4,7 @@ const nextConfig = {
   // Lego packages ship TS/TSX source (no build step) — Next must transpile
   // the ones whose UI components we render in the app (admin-console +
   // legal-and-compliance: LegalDocViewer / CookieBanner / AccessibilityStatement).
-  transpilePackages: ["@nexus/admin-console", "@nexus/legal-and-compliance", "@nexus/notifications", "@nexus/billing-and-subscriptions", "@nexus/organizations-and-teams", "@nexus/support-and-help", "@nexus/crm-and-lifecycle", "@nexus/profile-and-account", "@nexus/onboarding", "@nexus/developer-surface", "@nexus/social-and-engagement", "@nexus/analytics-and-telemetry"],
+  transpilePackages: ["@nexus/admin-console", "@nexus/legal-and-compliance", "@nexus/notifications", "@nexus/billing-and-subscriptions", "@nexus/organizations-and-teams", "@nexus/support-and-help", "@nexus/crm-and-lifecycle", "@nexus/profile-and-account", "@nexus/onboarding", "@nexus/developer-surface", "@nexus/social-and-engagement", "@nexus/analytics-and-telemetry", "@nexus/files-and-media"],
   experimental: {
     typedRoutes: false,
     // `pg` ships Node-built-in deps (net/tls/pg-native) webpack can't bundle.
