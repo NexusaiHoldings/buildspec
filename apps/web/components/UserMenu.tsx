@@ -8,7 +8,17 @@
 
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type JSX } from "react";
+
+/** Self-service surfaces mounted on the substrate (substrate-lego-wiring-001). */
+const ACCOUNT_LINKS: ReadonlyArray<{ href: string; label: string }> = [
+  { href: "/account", label: "Account" },
+  { href: "/org", label: "Organization" },
+  { href: "/billing", label: "Billing" },
+  { href: "/notifications", label: "Notifications" },
+  { href: "/help", label: "Help" },
+];
 
 export function UserMenu({ email }: { email: string }): JSX.Element {
   const [open, setOpen] = useState(false);
@@ -102,6 +112,25 @@ export function UserMenu({ email }: { email: string }): JSX.Element {
               {email}
             </div>
           </div>
+          <nav style={{ display: "flex", flexDirection: "column", padding: "4px 0", borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
+            {ACCOUNT_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                style={{
+                  display: "block",
+                  padding: "8px 14px",
+                  color: "#111",
+                  textDecoration: "none",
+                  fontSize: 14,
+                }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
           <button
             type="button"
             role="menuitem"
