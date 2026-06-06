@@ -4,6 +4,7 @@ import { TopNav } from "@/components/topnav";
 import { Footer } from "@/components/Footer";
 import { CookieBanner } from "@nexus/legal-and-compliance/ui/CookieBanner";
 import { SupportWidget } from "@nexus/support-and-help/ui/SupportWidget";
+import { AnalyticsBeacon } from "@/components/AnalyticsBeacon";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({
             attributed server-side by the /api/support/tickets shim from the
             session, so the widget works anonymously too. */}
         <SupportWidget />
+        <AnalyticsBeacon />
       </body>
     </html>
   );

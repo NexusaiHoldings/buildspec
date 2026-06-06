@@ -70,6 +70,7 @@ export async function TopNav(): Promise<JSX.Element> {
           <NavGroupItem key={group.label} group={group} />
         ))}
         {isAdmin && <NavItem href="/crm" label="CRM" />}
+        {isAdmin && <NavItem href="/admin/analytics" label="Analytics" />}
         {isAdmin && <NavItem href="/admin" label="Admin" />}
         {user ? (
           <UserMenu email={user.email} />
