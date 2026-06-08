@@ -12,6 +12,7 @@
  */
 
 import type { EventBus } from "@nexus/identity-and-access/api/_lib/events";
+import { shouldForward, forwardToRuntime } from "./runtime-events";
 
 /** Resolve the public base URL for links in emails. */
 function baseUrl(): string {
@@ -95,6 +96,17 @@ export function buildEventBus(): EventBus {
       } catch (err) {
         // Fire-and-forget: never let email delivery break the handler.
         console.error(`[event] delivery error for ${subject}: ${err}`);
+      }
+      // measurement-produce-side-001: forward keystone events to the
+      // portfolio-runtime so they reach the measurement engine. Awaited so
+      // the serverless function doesn't terminate before delivery, but
+      // forwardToRuntime never throws (fire-and-forget contract).
+      try {
+        if (shouldForward(subject)) {
+          await forwardToRuntime(subject, payload);
+        }
+      } catch (err) {
+        console.error(`[event] forward error for ${subject}: ${err}`);
       }
     },
   };
