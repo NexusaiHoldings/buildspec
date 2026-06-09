@@ -1,17 +1,42 @@
-/* Substrate global styles — minimal baseline. Per-company theming
-   ships via packages/ui design tokens. */
+/* Substrate global styles — functional, user-friendly baseline.
+ *
+ * substrate-ui-baseline-001 (2026-06-09). Goal: ANY page rendered inside
+ * <main> — template pages, lego components, or agent-generated domain pages —
+ * gets a readable, padded, professionally-spaced layout WITHOUT each page
+ * having to ship its own styling. Monochrome by design; per-company color
+ * theming layers on top later via packages/ui design tokens.
+ *
+ * Strategy: a centered content container on <main> + element-level defaults
+ * SCOPED under `main` (so the inline-styled TopNav / Footer / widgets that live
+ * outside <main> are never touched). Agents emit semantic HTML (h1/p/form/
+ * input/button/table/ul); styling those elements is what makes their output
+ * look finished with zero extra work.
+ */
 
 :root {
-  --substrate-bg: #fff;
-  --substrate-fg: #111;
+  --substrate-bg: #ffffff;
+  --substrate-fg: #111111;
+  --substrate-muted: #555555;
   --substrate-accent: #2563eb;
+  --substrate-border: #e2e2e2;
+  --substrate-border-strong: #c9c9c9;
+  --substrate-surface: #fafafa;
+  --substrate-surface-2: #f4f4f4;
+  --substrate-radius: 8px;
+  --substrate-control-h: 38px;
+  --substrate-max-width: 1080px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --substrate-bg: #111;
-    --substrate-fg: #f5f5f5;
+    --substrate-bg: #0f0f0f;
+    --substrate-fg: #f3f3f3;
+    --substrate-muted: #a3a3a3;
     --substrate-accent: #60a5fa;
+    --substrate-border: #2a2a2a;
+    --substrate-border-strong: #3d3d3d;
+    --substrate-surface: #161616;
+    --substrate-surface-2: #1c1c1c;
   }
 }
 
@@ -23,16 +48,206 @@
 
 html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: var(--substrate-bg);
   color: var(--substrate-fg);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ── Content container — the fix for flush-left, cut-off page content ──────── */
 main {
-  min-height: 100vh;
+  display: block;
+  max-width: var(--substrate-max-width);
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  min-height: 60vh;
 }
 
-a {
+/* ── Typography ────────────────────────────────────────────────────────────── */
+main h1 {
+  font-size: 1.875rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.35rem;
+}
+main h2 {
+  font-size: 1.35rem;
+  line-height: 1.3;
+  font-weight: 650;
+  margin: 1.75rem 0 0.5rem;
+}
+main h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.4rem;
+}
+/* The standard "page title + lead description" pattern: the lead <p> directly
+   under the page <h1> reads as a muted subtitle. */
+main h1 + p {
+  color: var(--substrate-muted);
+  font-size: 1.0625rem;
+  margin-bottom: 1.5rem;
+}
+main p {
+  margin-bottom: 1rem;
+}
+main a {
   color: var(--substrate-accent);
+  text-decoration: none;
+}
+main a:hover {
+  text-decoration: underline;
+}
+main small {
+  color: var(--substrate-muted);
+}
+
+/* ── Forms & controls — raw browser defaults → finished controls ──────────── */
+main label {
+  display: inline-block;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+main input,
+main select,
+main textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--substrate-bg);
+  border: 1px solid var(--substrate-border-strong);
+  border-radius: var(--substrate-radius);
+  padding: 0 0.75rem;
+  height: var(--substrate-control-h);
+  vertical-align: middle;
+  max-width: 100%;
+}
+main textarea {
+  height: auto;
+  padding: 0.6rem 0.75rem;
+  min-height: 96px;
+  line-height: 1.5;
+}
+main input::placeholder,
+main textarea::placeholder {
+  color: var(--substrate-muted);
+}
+main input:focus,
+main select:focus,
+main textarea:focus {
+  outline: none;
+  border-color: var(--substrate-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+/* Buttons (and links styled as buttons). Default button = filled neutral so a
+   bare <button>Search</button> reads as a real action, not raw chrome. */
+main button,
+main input[type="submit"],
+main input[type="button"],
+main .btn {
+  font: inherit;
+  font-weight: 550;
+  height: var(--substrate-control-h);
+  padding: 0 1rem;
+  border: 1px solid var(--substrate-fg);
+  border-radius: var(--substrate-radius);
+  background: var(--substrate-fg);
+  color: var(--substrate-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: opacity 0.12s ease;
+}
+main button:hover,
+main .btn:hover {
+  opacity: 0.85;
+  text-decoration: none;
+}
+main button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* Secondary button variant */
+main button.secondary,
+main .btn.secondary {
+  background: var(--substrate-bg);
+  color: var(--substrate-fg);
+  border-color: var(--substrate-border-strong);
+}
+
+/* A horizontal control row (search/filter bars). Agents can add class="toolbar"
+   to a wrapping div/form; without it, controls still render individually clean. */
+main .toolbar,
+main form.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0 1.5rem;
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+main table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.95rem;
+}
+main th,
+main td {
+  border: 1px solid var(--substrate-border);
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+main th {
+  background: var(--substrate-surface);
+  font-weight: 600;
+}
+main tbody tr:hover {
+  background: var(--substrate-surface);
+}
+
+/* ── Lists ────────────────────────────────────────────────────────────────── */
+main ul,
+main ol {
+  padding-left: 1.4rem;
+  margin-bottom: 1rem;
+}
+main li {
+  margin-bottom: 0.3rem;
+}
+
+/* ── Cards, surfaces & empty states — opt-in helpers agents/legos reach for ── */
+main .card {
+  border: 1px solid var(--substrate-border);
+  border-radius: var(--substrate-radius);
+  background: var(--substrate-bg);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+main .muted {
+  color: var(--substrate-muted);
+}
+/* Empty-state blocks (the "No properties yet…" pattern) read as a calm, bordered
+   panel when wrapped in .empty; bare text still inherits the muted look. */
+main .empty {
+  border: 1px dashed var(--substrate-border-strong);
+  border-radius: var(--substrate-radius);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--substrate-muted);
+  background: var(--substrate-surface);
+}
+main hr {
+  border: none;
+  border-top: 1px solid var(--substrate-border);
+  margin: 1.5rem 0;
+}
+main code {
+  background: var(--substrate-surface-2);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.9em;
 }
