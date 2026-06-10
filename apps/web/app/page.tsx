@@ -1,18 +1,20 @@
 /**
- * Root route — Conversation Surface (spec §6.1, the primary surface).
- *
- * Per NEXUS_PORTFOLIO_RUNTIME_SPEC.md the conversation surface is where the
- * portfolio company's agent operates: perception state + ongoing work + the
- * window the user nudges through. Direct CRUD pages live at /direct (fallback
- * per spec §6.5).
- *
- * The agent runtime sits at services/portfolio-runtime/ — this page is a
- * client to it via packages/runtime-client/.
+ * Root route (company-root-landing-001). The product picks its front door via
+ * apps/web/lib/home/home-config.ts:
+ *   mode "conversation" → §6.1 ConversationSurface (chat-first products).
+ *   mode "landing"      → themed hero (<Landing>); the conversation surface
+ *                         stays reachable at /assistant.
+ * Default config ships as a generic landing; provisioning overwrites per company.
  */
-
+import type { JSX } from "react";
+import { homeConfig } from "@/lib/home/home-config";
 import { ConversationSurface } from "@/components/conversation/surface";
+import { Landing } from "@/components/Landing";
 
 export default function HomePage(): JSX.Element {
-  const companyName = process.env.COMPANY_NAME || "Portfolio Company";
-  return <ConversationSurface companyName={companyName} />;
+  if (homeConfig.mode === "conversation") {
+    const companyName = process.env.COMPANY_NAME || "Portfolio Company";
+    return <ConversationSurface companyName={companyName} />;
+  }
+  return <Landing />;
 }
