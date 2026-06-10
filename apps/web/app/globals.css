@@ -189,6 +189,29 @@ main form.toolbar {
   margin: 1rem 0 1.5rem;
 }
 
+/* Vertical forms STACK by default — a plain <form> of label/input/select/
+   textarea/button (no wrapper divs) reads as a clean top-to-bottom form rather
+   than an inline-block jumble. `.toolbar` opts back into a horizontal row.
+   substrate-ui-baseline form-stacking fix (2026-06-10). */
+main form:not(.toolbar) {
+  max-width: 560px;
+}
+main form:not(.toolbar) label {
+  display: block;
+  margin: 1rem 0 0.3rem;
+}
+main form:not(.toolbar) input:not([type="checkbox"]):not([type="radio"]),
+main form:not(.toolbar) select,
+main form:not(.toolbar) textarea {
+  display: block;
+  width: 100%;
+}
+main form:not(.toolbar) button,
+main form:not(.toolbar) input[type="submit"] {
+  display: inline-block;
+  margin-top: 1.25rem;
+}
+
 /* ── Tables ───────────────────────────────────────────────────────────────── */
 main table {
   border-collapse: collapse;
