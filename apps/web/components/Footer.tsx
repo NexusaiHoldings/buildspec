@@ -5,6 +5,12 @@
  * @nexus/legal-and-compliance lego (/terms, /privacy, /cookie-policy,
  * /accessibility) plus the company About page. The lego's `extra_legal_links`
  * slot (sub-processor lists, DPA, etc.) can be appended here in a follow-up.
+ *
+ * substrate-ui-baseline-001 (2026-06-09): rewritten off dead Tailwind classes
+ * (the substrate has no Tailwind — those classes produced ZERO styling, so the
+ * footer rendered flush-left + borderless). Styled via `footer` rules in
+ * globals.css using the substrate design tokens, matching the TopNav approach.
+ * Markup is now class-free semantic HTML.
  */
 import Link from "next/link";
 
@@ -21,14 +27,14 @@ export function Footer(): JSX.Element {
   const company = process.env.COMPANY_NAME || "This company";
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-12 border-t border-gray-200 py-6 text-sm text-gray-500">
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between">
+    <footer>
+      <div>
         <span>
           © {year} {company}. All rights reserved.
         </span>
-        <nav className="flex flex-wrap gap-4">
+        <nav>
           {FOOTER_LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-gray-900">
+            <Link key={l.href} href={l.href}>
               {l.label}
             </Link>
           ))}
